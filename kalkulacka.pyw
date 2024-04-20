@@ -5,6 +5,27 @@ def updateValue(entry, value):
     entry.delete(0, tk.END)
     entry.insert(0, value)
 
+def updateCertainValues(values, value):
+    value=int(value)
+    for v in values:
+        match v:
+            case "400":
+                updateStackLabel(value//400)
+                updateValue(entries["400"]["entry"], value//400%255)
+            case "50":
+                updateValue(entries["50"]["entry"], value%400//50)
+            case "5":
+                updateValue(entries["5"]["entry"], value%400%50//5)
+            case "yang":
+                updateValue(entries["yang"]["entry"], value)
+            case "price":
+                updateValue(entries["price"]["entry"], value)
+            case "enchantedItems":
+                if (price := int(entries["price"]["entry"].get())) == 0:
+                    price = 1
+                updateValue(entries["enchantedItems"]["entry"], value//price)
+
+
 def updateStackLabel(redBrickStack):
     if (stack := redBrickStack//255) >= 1:
         redBrickStack = redBrickStack%255
@@ -15,34 +36,17 @@ def enchantedItemPriceChange():
     price = entries["price"]["entry"].get()
     if price == "" or not price.isnumeric():
         price = 1
-        updateValue(entries["price"]["entry"], 0)
 
     yang = int(price)*int(entries["enchantedItems"]["value"].get())
 
-    updateStackLabel(yang//400)
-
-    updateValue(entries["yang"]["entry"], yang)
-    updateValue(entries["400"]["entry"], yang//400%255)
-    updateValue(entries["50"]["entry"], yang%400//50)
-    updateValue(entries["5"]["entry"], yang%400%50//5)
+    updateCertainValues(["yang", "400", "50", "5"], yang)
 
 def yangChange():
     yang = entries["yang"]["entry"].get()
     if yang == "" or not yang.isnumeric():
         yang = 0
 
-    price = int(entries["price"]["value"].get())
-    if price == 0:   
-        price = 1
-        updateValue(entries["price"]["entry"], 0)
-    enchantedItems=int(yang)//price
-
-    updateStackLabel(int(yang)//400)
-
-    updateValue(entries["50"]["entry"], int(yang)%400//50)
-    updateValue(entries["400"]["entry"], int(yang)//400%255)
-    updateValue(entries["5"]["entry"], int(yang)%400%50//5)
-    updateValue(entries["enchantedItems"]["entry"], enchantedItems)
+    updateCertainValues(["400","50","5", "enchantedItems"], yang)
 
 def redBrickStackChange():
     bricky = entries["400"]["entry"].get()
@@ -51,21 +55,12 @@ def redBrickStackChange():
 
     yang = int(bricky)*400
 
-    price = int(entries["price"]["value"].get())
-    if price == 0:   
-        price = 1
-        updateValue(entries["price"]["entry"], price)
-    enchantedItems=yang//price
-
     if (stack := int(bricky)//255) >= 1:
         bricky = int(bricky)%255
         updateValue(entries["400"]["entry"], bricky)
 
     labelStack["text"] = f"+ 255x{stack}"
-    updateValue(entries["yang"]["entry"], yang)
-    updateValue(entries["50"]["entry"], yang%400//50)
-    updateValue(entries["5"]["entry"], yang%400%50//5)
-    updateValue(entries["enchantedItems"]["entry"], enchantedItems)
+    updateCertainValues(["yang","50","5", "enchantedItems"], yang)
 
 def brickChange(value):
     bricky = entries[value]["entry"].get()
@@ -73,23 +68,11 @@ def brickChange(value):
         bricky = 0
 
     yang = int(bricky)*int(value)
-    price = int(entries["price"]["value"].get())
-
-    if price == 0:   
-        price = 1
-        updateValue(entries["price"]["entry"], price)
-    enchantedItems=int(yang)//price
-
-    updateStackLabel(yang//400)
     
     if value == "50":
-        updateValue(entries["5"]["entry"], yang%400%50//5)
+        updateCertainValues(["yang","400","5", "enchantedItems"], yang)
     else:
-        updateValue(entries["50"]["entry"], yang%400//50)
-
-    updateValue(entries["yang"]["entry"], yang)
-    updateValue(entries["400"]["entry"], yang//400%255)
-    updateValue(entries["enchantedItems"]["entry"], enchantedItems)
+        updateCertainValues(["yang","400","50", "enchantedItems"], yang)
 
 def enchatedItemsChange():
     enchantedItems = entries["enchantedItems"]["entry"].get() 
@@ -98,12 +81,7 @@ def enchatedItemsChange():
 
     yang =int(enchantedItems)*int(entries["price"]["value"].get())
 
-    updateStackLabel(yang//400)
-
-    updateValue(entries["yang"]["entry"], yang)
-    updateValue(entries["400"]["entry"], yang//400%255)
-    updateValue(entries["50"]["entry"], yang%400//50)
-    updateValue(entries["5"]["entry"], yang%400%50//5)
+    updateCertainValues(["yang","400","50", "5"], yang)
 
 def callback(*args):
     global updateLock
@@ -112,26 +90,20 @@ def callback(*args):
     updateLock = True
 
     match args[0]:
-        case "PY_VAR0":
-            enchantedItemPriceChange()
+        case "PY_VAR0": enchantedItemPriceChange()
 
-        case "PY_VAR1":
-            yangChange()
+        case "PY_VAR1": yangChange()
 
-        case "PY_VAR2":
-            redBrickStackChange()
+        case "PY_VAR2": redBrickStackChange()
 
-        case "PY_VAR3":
-            brickChange("50")
+        case "PY_VAR3": brickChange("50")
 
-        case "PY_VAR4":
-            brickChange("5")
+        case "PY_VAR4": brickChange("5")
 
-        case "PY_VAR5":
-            enchatedItemsChange()
+        case "PY_VAR5": enchatedItemsChange()
 
-        case _:
-            print("Unknown variable")
+        case _: print("Unknown variable")
+
     updateLock = False
 
 root = tk.Tk()
@@ -153,8 +125,7 @@ entries = {
         "400": {},
         "50": {},
         "5": {},
-        "enchantedItems": {}
-           }
+        "enchantedItems": {} }
 
 for i, key in enumerate(entries):
     if key == "price":
