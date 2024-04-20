@@ -15,7 +15,7 @@ def enchantedItemPriceChange():
     price = entries["price"]["entry"].get()
     if price == "" or not price.isnumeric():
         price = 1
-        updateValue(entries["price"]["entry"], price)
+        updateValue(entries["price"]["entry"], 0)
 
     yang = int(price)*int(entries["enchantedItems"]["value"].get())
 
@@ -34,7 +34,7 @@ def yangChange():
     price = int(entries["price"]["value"].get())
     if price == 0:   
         price = 1
-        updateValue(entries["price"]["entry"], price)
+        updateValue(entries["price"]["entry"], 0)
     enchantedItems=int(yang)//price
 
     updateStackLabel(int(yang)//400)
@@ -55,7 +55,7 @@ def redBrickStackChange():
     if price == 0:   
         price = 1
         updateValue(entries["price"]["entry"], price)
-    enchantedItems=int(yang)//price
+    enchantedItems=yang//price
 
     if (stack := int(bricky)//255) >= 1:
         bricky = int(bricky)%255
@@ -71,9 +71,10 @@ def brickChange(value):
     bricky = entries[value]["entry"].get()
     if bricky == "" or not bricky.isnumeric():
         bricky = 0
-    yang =int(bricky)*int(value)
 
+    yang = int(bricky)*int(value)
     price = int(entries["price"]["value"].get())
+
     if price == 0:   
         price = 1
         updateValue(entries["price"]["entry"], price)
@@ -81,16 +82,20 @@ def brickChange(value):
 
     updateStackLabel(yang//400)
     
+    if value == "50":
+        updateValue(entries["5"]["entry"], yang%400%50//5)
+    else:
+        updateValue(entries["50"]["entry"], yang%400//50)
+
     updateValue(entries["yang"]["entry"], yang)
     updateValue(entries["400"]["entry"], yang//400%255)
-    updateValue(entries["50"]["entry"], yang%400//50)
-    updateValue(entries["5"]["entry"], yang%400%50//5)
     updateValue(entries["enchantedItems"]["entry"], enchantedItems)
 
 def enchatedItemsChange():
     enchantedItems = entries["enchantedItems"]["entry"].get() 
     if enchantedItems == "" or not enchantedItems.isnumeric():
         enchantedItems = 0 
+
     yang =int(enchantedItems)*int(entries["price"]["value"].get())
 
     updateStackLabel(yang//400)
